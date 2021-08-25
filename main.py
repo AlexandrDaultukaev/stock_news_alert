@@ -35,8 +35,8 @@ def send_to_email(ttle, desc, price):
                                                                      f" {desc}".encode("utf-8"))
 
 
-def calc_percentage(today_p, yesterday_p, key=1):
-    return round(((today_p - yesterday_p) * 100) / yesterday_p * key, 3)
+def calc_percentage(today_p, yesterday_p):
+    return round(abs(((today_p - yesterday_p) * 100) / yesterday_p), 3)
 
 
 def find_percentage(stk):
@@ -54,7 +54,7 @@ def find_percentage(stk):
         percentage = calc_percentage(today_price, yesterday_price)
         return f"Stock price increase. ^ {percentage}%"
     else:
-        percentage = calc_percentage(today_price, yesterday_price, -1)
+        percentage = calc_percentage(today_price, yesterday_price)
         return f"Stock price decrease. ∨ {percentage}%"
 
 
