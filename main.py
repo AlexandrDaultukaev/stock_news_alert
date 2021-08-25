@@ -23,23 +23,27 @@ stock_params = {
 }
 
 
+def calc_percentage(today_p, yesterday_p, key=1):
+    return round(((today_p - yesterday_p) * 100) / yesterday_p * key, 3)
+
+
 def find_percentage(stk):
     day = int(list(stk["Time Series (Daily)"].keys())[0].split("-")[2])
     month = list(stk["Time Series (Daily)"].keys())[0].split("-")[1]
     year = list(stk["Time Series (Daily)"].keys())[0].split("-")[0]
-    print(stk)
     yesterday = day - 1
     if day < 10:
         day = f"0{day}"
     if yesterday < 10:
         yesterday = f"0{yesterday}"
-
-    if float(stk["Time Series (Daily)"][f"{year}-{month}-{day}"]["4. close"]) > \
-            float(stk["Time Series (Daily)"][f"{year}-{month}-{yesterday}"]["4. close"]):
-        print("Stock price increase")
+    today_price = float(stk["Time Series (Daily)"][f"{year}-{month}-{day}"]["4. close"])
+    yesterday_price = float(stk["Time Series (Daily)"][f"{year}-{month}-{yesterday}"]["4. close"])
+    if today_price > yesterday_price:
+        percentage = calc_percentage(today_price, yesterday_price)
+        print(f"Stock price increase. ^ {percentage}%")
     else:
-        print("Stock price decrease")
-
+        percentage = calc_percentage(today_price, yesterday_price, -1)
+        print(f"Stock price decrease. ∨ {percentage}%")
 
 
 def find_description(art):
