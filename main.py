@@ -1,5 +1,6 @@
 import os
 import requests
+import smtplib
 from dotenv import load_dotenv
 
 STOCK = "TSLA"
@@ -10,6 +11,9 @@ stock_URL = "https://www.alphavantage.co/query"
 load_dotenv()
 news_API = os.getenv("API_KEY")
 stock_API = os.getenv("STOCK_API")
+from_email = os.getenv("FROM_EMAIL")
+mail = os.getenv("EMAIL")
+password = os.getenv("PASSWORD")
 
 news_params = {
     "apiKey": news_API,
@@ -21,6 +25,14 @@ stock_params = {
     "symbol": STOCK,
     "apikey": stock_API,
 }
+
+
+def send_to_email(ttle, desc, price):
+    with smtplib.SMTP("smtp.gmail.com") as connecting:
+        connecting.starttls()
+        connecting.login(user=from_email, password=password)
+        connecting.sendmail(from_addr=from_email, to_addrs=mail, msg=f"Subject: {price}\n\nHeadline: {ttle}\nBrief:"
+                                                                     f" {desc}".encode("utf-8"))
 
 
 def calc_percentage(today_p, yesterday_p, key=1):
@@ -40,10 +52,10 @@ def find_percentage(stk):
     yesterday_price = float(stk["Time Series (Daily)"][f"{year}-{month}-{yesterday}"]["4. close"])
     if today_price > yesterday_price:
         percentage = calc_percentage(today_price, yesterday_price)
-        print(f"Stock price increase. ^ {percentage}%")
+        return f"Stock price increase. ^ {percentage}%"
     else:
         percentage = calc_percentage(today_price, yesterday_price, -1)
-        print(f"Stock price decrease. ∨ {percentage}%")
+        return f"Stock price decrease. ∨ {percentage}%"
 
 
 def find_description(art):
@@ -59,10 +71,12 @@ articles = response.json()
 response = requests.get(stock_URL, params=stock_params)
 response.raise_for_status()
 stock_news = response.json()
-find_percentage(stock_news)
-
+print(articles)
 num_art = find_description(articles)
+
 title = articles["articles"][num_art]["title"]
 description = articles["articles"][num_art]["description"]
+about_price = find_percentage(stock_news)
 
-print(f"Headline: {title}\n\nBrief: {description}")
+send_to_email(title, description, about_price)
+
